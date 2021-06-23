@@ -12,6 +12,7 @@ class Tile:
     def __init__(self, blocked: bool, block_sight: Optional[bool]=None):
         self.blocked = blocked
         self.block_sight = block_sight if block_sight is not None else blocked
+        self.explored = False
 
     def dig_out(self):
         self.blocked = False
@@ -79,11 +80,10 @@ class Map:
         for r in range(max_rooms):
             w = randint(room_min_size, room_max_size)
             h = randint(room_min_size, room_max_size)
-            x = randint(0, map_width - w - 1)
-            y = randint(0, map_height - h - 1)
+            x = randint(0, map_width - w - 2)
+            y = randint(0, map_height - h - 2)
 
             new_room = Rect(x, y, w, h)
-            print(new_room)
             for room in rooms:
                 if new_room.intersects(room):
                     break
