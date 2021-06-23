@@ -1,5 +1,7 @@
 from functools import reduce
 from hashlib import new
+
+import tcod
 from models.entity import Entity
 from random import randint
 from typing import List, Optional, Tuple
@@ -38,6 +40,13 @@ class Rect:
             self.y1 <= other.y2 and self.y2 >= other.y1
         )
 
+    def random_location(self) -> Tuple[int, int]:
+        """Returns a random coordinate in the room"""
+        return (
+            randint(self.x1 + 1, self.x2 - 1),
+            randint(self.y1 + 1, self.y2 - 1)
+        )
+
 
 class Map:
     def __init__(self, width: int, height: int):
@@ -74,7 +83,34 @@ class Map:
         ]
         return tiles
 
-    def make_room_based_map(self, max_rooms: int, room_min_size: int, room_max_size: int, map_width: int, map_height: int, player: Entity):
+    def place_entities(
+        self,
+        room: Rect,
+        entities: List[Entity],
+        max_monsters_per_room: int=5
+    ) -> List[Entity]:
+        monster_count = randint(0, max_monsters_per_room)
+        for i in range(monster_count):
+            x, y = room.random_location()
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                if randint(0, 100) < 80:
+                    monster = Entity(x, y, 'o', tcod.desaturated_fuchsia, 'Orc', blocks=True)
+                else:
+                    monster = Entity(x, y, 'T', tcod.fuchsia, 'Troll', blocks=True)
+                entities.append(monster)
+        return entities
+
+    def make_room_based_map(
+        self,
+        max_rooms: int,
+        room_min_size: int,
+        room_max_size: int,
+        map_width: int,
+        map_height: int,
+        player: Entity,
+        entities: List[Entity],
+        max_monsters_per_room: int,
+    ):
         rooms = []
 
         for r in range(max_rooms):
@@ -101,4 +137,6 @@ class Map:
                     else:
                         self.create_vertical_tunnel(prev_y, new_y, prev_x)
                         self.create_horizontal_tunnel(prev_x, new_x, new_y)
+
+                self.place_entities(new_room, entities, max_monsters_per_room)
                 rooms.append(new_room)
