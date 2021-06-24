@@ -23,7 +23,7 @@ def render_all(
     panel_height: int,
     panel_y: int,
     mouse: tcod.Mouse,
-    colors: Dict[str, tcod.Color]
+    colors: Dict[str, tcod.Color],
 ):
     # Draw map tiles
     if fov_recompute:
@@ -34,15 +34,15 @@ def render_all(
 
                 if visible:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get('light_wall'), tcod.BKGND_SET)
+                        tcod.console_set_char_background(con, x, y, colors.get("light_wall"), tcod.BKGND_SET)
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get('light_ground'), tcod.BKGND_SET)
+                        tcod.console_set_char_background(con, x, y, colors.get("light_ground"), tcod.BKGND_SET)
                     game_map.tiles[x][y].explored = True
                 elif game_map.tiles[x][y].explored:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get('dark_wall'), tcod.BKGND_SET)
+                        tcod.console_set_char_background(con, x, y, colors.get("dark_wall"), tcod.BKGND_SET)
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get('dark_ground'), tcod.BKGND_SET)
+                        tcod.console_set_char_background(con, x, y, colors.get("dark_ground"), tcod.BKGND_SET)
 
     entities.sort(key=lambda x: x.render_order.value)
 
@@ -61,7 +61,9 @@ def render_all(
         tcod.console_print_ex(panel, message_log.x, y, tcod.BKGND_NONE, tcod.LEFT, message.text)
         y += 1
 
-    render_bar(panel, 1, 1, bar_width, 'HP', player.fighter.hp, player.fighter.max_hp, tcod.light_red, tcod.dark_red, height=3)
+    render_bar(
+        panel, 1, 1, bar_width, "HP", player.fighter.hp, player.fighter.max_hp, tcod.light_red, tcod.dark_red, height=3
+    )
 
     tcod.console_set_default_foreground(panel, tcod.light_gray)
     tcod.console_print_ex(panel, 1, 0, tcod.BKGND_NONE, tcod.LEFT, get_names_under_mouse(mouse, entities, fov_map))
@@ -81,18 +83,20 @@ def draw_entity(con: tcod.Console, entity: Entity, fov_map: tcod.map.Map):
 
 
 def clear_entity(con, entity: Entity):
-    tcod.console_put_char(con, entity.x, entity.y, ' ', tcod.BKGND_NONE)
+    tcod.console_put_char(con, entity.x, entity.y, " ", tcod.BKGND_NONE)
 
 
 def get_names_under_mouse(mouse: tcod.Mouse, entities: List[Entity], fov_map: tcod.map.Map) -> str:
     (x, y) = (mouse.cx, mouse.cy)
     # print([(e.x, e.y) for e in entities])
-    selected_entities = list(filter(lambda e: e.x == x and e.y == y and tcod.map_is_in_fov(fov_map, e.x, e.y), entities))
+    selected_entities = list(
+        filter(lambda e: e.x == x and e.y == y and tcod.map_is_in_fov(fov_map, e.x, e.y), entities)
+    )
     # print('selection')
     # print(mouse)
     # print(x, y)
     # print(selected_entities)
-    return ', '.join([e.name for e in selected_entities])
+    return ", ".join([e.name for e in selected_entities])
 
 
 def render_bar(
@@ -105,7 +109,7 @@ def render_bar(
     maximum: int,
     bar_color: tcod.Color,
     back_color: tcod.Color,
-    height: int = 1
+    height: int = 1,
 ):
     bar_width = int(float(value) / maximum * total_width)
 
@@ -118,10 +122,5 @@ def render_bar(
 
     tcod.console_set_default_foreground(panel, tcod.white)
     tcod.console_print_ex(
-        panel,
-        int(x + total_width / 2),
-        int(y + height / 2),
-        tcod.BKGND_NONE,
-        tcod.CENTER,
-        f'{name}: {value}/{maximum}'
+        panel, int(x + total_width / 2), int(y + height / 2), tcod.BKGND_NONE, tcod.CENTER, f"{name}: {value}/{maximum}"
     )

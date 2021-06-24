@@ -11,16 +11,18 @@ class Entity:
     """
     Generic world object
     """
+
     def __init__(
         self,
-        x: int=0, y: int=0,
-        char: str='?',
-        color: tcod.Color=tcod.white,
-        name: str='',
-        blocks: bool=False,
-        render_order: RenderOrder=RenderOrder.CORPSE,
-        fighter: Optional[Fighter]=None,
-        ai: Optional[BasicMonster]=None,
+        x: int = 0,
+        y: int = 0,
+        char: str = "?",
+        color: tcod.Color = tcod.white,
+        name: str = "",
+        blocks: bool = False,
+        render_order: RenderOrder = RenderOrder.CORPSE,
+        fighter: Optional[Fighter] = None,
+        ai: Optional[BasicMonster] = None,
     ):
         self.x = x
         self.y = y
@@ -40,14 +42,11 @@ class Entity:
         if self.ai:
             self.ai.owner = self
 
-    def get_blocking_entity_at_location(
-        entities: List['Entity'],
-        x: int, y: int
-    ) -> Optional['Entity']:
+    def get_blocking_entity_at_location(entities: List["Entity"], x: int, y: int) -> Optional["Entity"]:
         """Class utility to fetch the blocking entity at a location, if any"""
         return next(filter(lambda e: e.blocks and e.x == x and e.y == y, entities), None)
 
-    def distance_to(self, target: 'Entity') -> float:
+    def distance_to(self, target: "Entity") -> float:
         dx = target.x - self.x
         dy = target.y - self.y
         return sqrt(dx ** 2 + dy ** 2)
@@ -56,7 +55,7 @@ class Entity:
         self.x += dx
         self.y += dy
 
-    def move_towards(self, target_x: int, target_y: int, game_map, entities: List['Entity']):
+    def move_towards(self, target_x: int, target_y: int, game_map, entities: List["Entity"]):
         dx = target_x - self.x
         dy = target_y - self.y
         distance = sqrt(dx ** 2 + dy ** 2)
@@ -64,22 +63,22 @@ class Entity:
         dy = int(round(dy / distance))
 
         if not (
-            game_map.is_blocked(self.x + dx, self.y + dy) or
-            Entity.get_blocking_entity_at_location(entities, self.x + dx, self.y + dy)
+            game_map.is_blocked(self.x + dx, self.y + dy)
+            or Entity.get_blocking_entity_at_location(entities, self.x + dx, self.y + dy)
         ):
             self.move(dx, dy)
 
-
     # src: http://www.roguebasin.com/index.php?title=Complete_Roguelike_Tutorial,_using_Python%2Blibtcod,_extras#A.2A_Pathfinding
-    def move_astar(self, target: 'Entity', game_map, entities: List['Entity']):
+    def move_astar(self, target: "Entity", game_map, entities: List["Entity"]):
         # Create a FOV map that has the dimensions of the map
         fov = tcod.map_new(game_map.width, game_map.height)
 
         # Scan the current map each turn and set all the walls as unwalkable
         for y1 in range(game_map.height):
             for x1 in range(game_map.width):
-                tcod.map_set_properties(fov, x1, y1, not game_map.tiles[x1][y1].block_sight,
-                                           not game_map.tiles[x1][y1].blocked)
+                tcod.map_set_properties(
+                    fov, x1, y1, not game_map.tiles[x1][y1].block_sight, not game_map.tiles[x1][y1].blocked
+                )
 
         # Scan all the objects to see if there are objects that must be navigated around
         # Check also that the object isn't self or the target (so that the start and the end points are free)

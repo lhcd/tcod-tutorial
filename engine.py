@@ -45,14 +45,10 @@ def main():
     entities = [player]
 
     tcod.console_set_custom_font(
-        "arial10x10.png",
-        tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD,
+        "arial10x10.png", tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD,
     )
     tcod.console_init_root(
-        screen_width,
-        screen_height,
-        "hm",
-        False,
+        screen_width, screen_height, "hm", False,
     )
 
     con = tcod.console_new(screen_width, screen_height)
@@ -64,14 +60,7 @@ def main():
     max_monsters_per_room = 3
     game_map = Map(map_width, map_height)
     game_map.make_room_based_map(
-        max_rooms,
-        room_min_size,
-        room_max_size,
-        map_width,
-        map_height,
-        player,
-        entities,
-        max_monsters_per_room,
+        max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room,
     )
 
     fov_algorithm = tcod.FOV_PERMISSIVE_0
@@ -91,9 +80,7 @@ def main():
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
 
         if fov_recompute:
-            recompute_fov(
-                fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm
-            )
+            recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
         render_all(
             con,
@@ -128,9 +115,7 @@ def main():
             destination_x = player.x + dx
             destination_y = player.y + dy
             if not game_map.is_blocked(destination_x, destination_y):
-                target = Entity.get_blocking_entity_at_location(
-                    entities, destination_x, destination_y
-                )
+                target = Entity.get_blocking_entity_at_location(entities, destination_x, destination_y)
                 if target:
                     player_turn_results += player.fighter.attack(target)
                 else:
@@ -157,9 +142,7 @@ def main():
         if game_state == GameState.ENEMY_TURN:
             for entity in entities:
                 if entity.ai:
-                    enemy_turn_results = entity.ai.take_turn(
-                        player, fov_map, game_map, entities
-                    )
+                    enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
                     for result in enemy_turn_results:
                         message = result.get("message")
                         dead_entity = result.get("dead")

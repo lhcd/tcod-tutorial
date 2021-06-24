@@ -6,6 +6,7 @@ class GameState(Enum):
     ENEMY_TURN = 2
     PLAYER_DEAD = 3
 
+
 class RenderOrder(Enum):
     CORPSE = 0
     ITEM = 1

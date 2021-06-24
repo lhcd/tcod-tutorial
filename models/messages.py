@@ -4,9 +4,10 @@ import textwrap
 
 
 class Message:
-    def __init__(self, text: str, color: tcod.Color=tcod.white) -> None:
+    def __init__(self, text: str, color: tcod.Color = tcod.white) -> None:
         self.text = text
         self.color = color
+
 
 class MessageLog:
     def __init__(self, x: int, width: int, height: int) -> None:

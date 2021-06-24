@@ -17,7 +17,7 @@ class Fighter:
         self.hp -= amount
 
         if self.hp < 1:
-            results.append({'dead': self.owner})
+            results.append({"dead": self.owner})
 
         return results
 
@@ -25,10 +25,10 @@ class Fighter:
         damage = self.power - target.fighter.defense
         if damage > 0:
             return [
-                {'message': Message(f'{self.owner.name} attacks {target.name} for {damage} HP', tcod.white)},
+                {"message": Message(f"{self.owner.name} attacks {target.name} for {damage} HP", tcod.white)},
             ] + target.fighter.take_damage(damage)
         else:
-            return [{'message': Message(f'{self.owner.name} attacks {target.name} but does no damage', tcod.white)}]
+            return [{"message": Message(f"{self.owner.name} attacks {target.name} but does no damage", tcod.white)}]
 
 
 class BasicMonster:

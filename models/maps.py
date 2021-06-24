@@ -13,7 +13,8 @@ class Tile:
     """
     A location on a map. May be passable, may be see thru.
     """
-    def __init__(self, blocked: bool, block_sight: Optional[bool]=None):
+
+    def __init__(self, blocked: bool, block_sight: Optional[bool] = None):
         self.blocked = blocked
         self.block_sight = block_sight if block_sight is not None else blocked
         self.explored = False
@@ -21,6 +22,7 @@ class Tile:
     def dig_out(self):
         self.blocked = False
         self.block_sight = False
+
 
 class Rect:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -31,23 +33,14 @@ class Rect:
 
     def center(self) -> Tuple[int, int]:
         """Gets the coordinates of the center of this rectangle"""
-        return (
-            int((self.x1 + self.x2) / 2),
-            int((self.y1 + self.y2) / 2)
-        )
+        return (int((self.x1 + self.x2) / 2), int((self.y1 + self.y2) / 2))
 
-    def intersects(self, other: 'Rect') -> bool:
-        return (
-            self.x1 <= other.x2 and self.x2 >= other.x1 and
-            self.y1 <= other.y2 and self.y2 >= other.y1
-        )
+    def intersects(self, other: "Rect") -> bool:
+        return self.x1 <= other.x2 and self.x2 >= other.x1 and self.y1 <= other.y2 and self.y2 >= other.y1
 
     def random_location(self) -> Tuple[int, int]:
         """Returns a random coordinate in the room"""
-        return (
-            randint(self.x1 + 1, self.x2 - 1),
-            randint(self.y1 + 1, self.y2 - 1)
-        )
+        return (randint(self.x1 + 1, self.x2 - 1), randint(self.y1 + 1, self.y2 - 1))
 
 
 class Map:
@@ -77,29 +70,21 @@ class Map:
             self.tiles[x][y].dig_out()
 
     def initialize_tiles(self) -> List[List[Tile]]:
-        tiles = [
-            [
-                Tile(True) for y in range(self.height)
-            ]
-            for x in range(self.width)
-        ]
+        tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
         return tiles
 
-    def place_entities(
-        self,
-        room: Rect,
-        entities: List[Entity],
-        max_monsters_per_room: int=5
-    ) -> List[Entity]:
+    def place_entities(self, room: Rect, entities: List[Entity], max_monsters_per_room: int = 5) -> List[Entity]:
         monster_count = randint(0, max_monsters_per_room)
         for i in range(monster_count):
             x, y = room.random_location()
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 if randint(0, 100) < 80:
                     monster = Entity(
-                        x, y, 'o',
+                        x,
+                        y,
+                        "o",
                         tcod.desaturated_fuchsia,
-                        'Orc',
+                        "Orc",
                         blocks=True,
                         render_order=RenderOrder.ACTOR,
                         fighter=Fighter(hp=10, defense=0, power=3),
@@ -107,9 +92,11 @@ class Map:
                     )
                 else:
                     monster = Entity(
-                        x, y, 'T',
+                        x,
+                        y,
+                        "T",
                         tcod.fuchsia,
-                        'Troll',
+                        "Troll",
                         blocks=True,
                         render_order=RenderOrder.ACTOR,
                         fighter=Fighter(hp=16, defense=1, power=4),
