@@ -4,18 +4,19 @@ import tcod
 
 from game_state import GameState
 from models.entity import Entity
+from models.messages import Message
 from game_state import RenderOrder
 
 
 
-def kill_player(player: Entity) -> Tuple[str, GameState]:
+def kill_player(player: Entity) -> Tuple[Message, GameState]:
     player.char = '%'
     player.color = tcod.dark_red
 
-    return 'You died!', GameState.PLAYER_DEAD
+    return Message('You died!', tcod.red), GameState.PLAYER_DEAD
 
 
-def kill_monster(monster: Entity) -> str:
+def kill_monster(monster: Entity) -> Message:
     death_message = f'{monster.name} is dead!'
     monster.char = '%'
     monster.color = tcod.dark_red
@@ -25,4 +26,4 @@ def kill_monster(monster: Entity) -> str:
     monster.name = f'remains of {monster.name}'
     monster.render_order = RenderOrder.CORPSE
 
-    return death_message
+    return Message(death_message, tcod.orange)

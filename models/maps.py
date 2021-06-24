@@ -107,7 +107,7 @@ class Map:
                     )
                 else:
                     monster = Entity(
-                        x, y, 'o',
+                        x, y, 'T',
                         tcod.fuchsia,
                         'Troll',
                         blocks=True,

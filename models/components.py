@@ -2,6 +2,8 @@ from typing import Any, Dict, List
 
 import tcod
 
+from models.messages import Message
+
 
 class Fighter:
     def __init__(self, hp: int, defense: int, power: int):
@@ -23,10 +25,10 @@ class Fighter:
         damage = self.power - target.fighter.defense
         if damage > 0:
             return [
-                {'message': f'{self.owner.name} attacks {target.name} for {damage} HP'},
+                {'message': Message(f'{self.owner.name} attacks {target.name} for {damage} HP', tcod.white)},
             ] + target.fighter.take_damage(damage)
         else:
-            return [{'message': f'{self.owner.name} attacks {target.name} but does no damage'}]
+            return [{'message': Message(f'{self.owner.name} attacks {target.name} but does no damage', tcod.white)}]
 
 
 class BasicMonster:
