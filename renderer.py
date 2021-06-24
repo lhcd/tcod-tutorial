@@ -2,11 +2,12 @@ from typing import Dict, List
 
 import tcod
 
+from game_state import RenderOrder
 from models.entity import Entity
-from models.map_objects import Map
+from models.maps import Map
 
 
-def render_all(con, entities: List[Entity], game_map: Map, fov_map: tcod.map.Map, fov_recompute: bool, screen_width: int, screen_height: int, colors: Dict[str, tcod.Color]):
+def render_all(con, entities: List[Entity], player: Entity, game_map: Map, fov_map: tcod.map.Map, fov_recompute: bool, screen_width: int, screen_height: int, colors: Dict[str, tcod.Color]):
     # Draw map tiles
     if fov_recompute:
         for y in range(game_map.height):
@@ -26,10 +27,18 @@ def render_all(con, entities: List[Entity], game_map: Map, fov_map: tcod.map.Map
                     else:
                         tcod.console_set_char_background(con, x, y, colors.get('dark_ground'), tcod.BKGND_SET)
 
+    entities.sort(key=lambda x: x.render_order.value)
+
     # Draw entities
     for entity in entities:
         draw_entity(con, entity, fov_map)
+
+    # Draw player state
+    tcod.console_set_default_foreground(con, tcod.white)
+    tcod.console_print_ex(con, 1, screen_height - 2, tcod.BKGND_NONE, tcod.LEFT, f'{player.fighter.hp}/{player.fighter.max_hp}')
+
     tcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
+
 
 def clear_all(con, entities: List[Entity]):
     for entity in entities:

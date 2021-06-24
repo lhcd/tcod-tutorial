@@ -1,10 +1,12 @@
 from functools import reduce
-from hashlib import new
+from typing import List, Optional, Tuple
+from random import randint
 
 import tcod
+
+from game_state import RenderOrder
+from models.components import BasicMonster, Fighter
 from models.entity import Entity
-from random import randint
-from typing import List, Optional, Tuple
 
 
 class Tile:
@@ -94,9 +96,25 @@ class Map:
             x, y = room.random_location()
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 if randint(0, 100) < 80:
-                    monster = Entity(x, y, 'o', tcod.desaturated_fuchsia, 'Orc', blocks=True)
+                    monster = Entity(
+                        x, y, 'o',
+                        tcod.desaturated_fuchsia,
+                        'Orc',
+                        blocks=True,
+                        render_order=RenderOrder.ACTOR,
+                        fighter=Fighter(hp=10, defense=0, power=3),
+                        ai=BasicMonster(),
+                    )
                 else:
-                    monster = Entity(x, y, 'T', tcod.fuchsia, 'Troll', blocks=True)
+                    monster = Entity(
+                        x, y, 'o',
+                        tcod.fuchsia,
+                        'Troll',
+                        blocks=True,
+                        render_order=RenderOrder.ACTOR,
+                        fighter=Fighter(hp=16, defense=1, power=4),
+                        ai=BasicMonster(),
+                    )
                 entities.append(monster)
         return entities
 

@@ -1,6 +1,6 @@
 import tcod
 
-from models.map_objects import Map
+from models.maps import Map
 
 def initialize_fov(game_map: Map) -> tcod.map.Map:
     fov_map = tcod.map_new(game_map.width, game_map.height)
