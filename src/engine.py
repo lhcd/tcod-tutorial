@@ -1,3 +1,5 @@
+import os
+
 import tcod
 
 from death_handlers import kill_monster, kill_player
@@ -46,8 +48,9 @@ def main():
     )
     entities = [player]
 
+    dirname = os.path.dirname(__file__)
     tcod.console_set_custom_font(
-        "arial10x10.png", tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD,
+        "./assets/arial10x10.png", tcod.FONT_TYPE_GRAYSCALE | tcod.FONT_LAYOUT_TCOD,
     )
     tcod.console_init_root(
         screen_width, screen_height, "hm", False,
