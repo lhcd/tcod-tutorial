@@ -1,0 +1,1 @@
+a relatively close follow of [this tutorial](http://rogueliketutorials.com/tutorials/tcod/) with minor structural changes & updates for compatibility with newer versions of tcod
