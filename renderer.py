@@ -88,14 +88,11 @@ def clear_entity(con, entity: Entity):
 
 def get_names_under_mouse(mouse: tcod.Mouse, entities: List[Entity], fov_map: tcod.map.Map) -> str:
     (x, y) = (mouse.cx, mouse.cy)
-    # print([(e.x, e.y) for e in entities])
+    # It seems like this way of getting mouse position is broken in current tcod (?)
+    # TODO: switch from deprecated `tcod.sys_check_for_event` to `tcod.event.get`
     selected_entities = list(
-        filter(lambda e: e.x == x and e.y == y and tcod.map_is_in_fov(fov_map, e.x, e.y), entities)
+        filter(lambda e: int(e.x/2) == x and int(e.y/2) == y and tcod.map_is_in_fov(fov_map, e.x, e.y), entities)
     )
-    # print('selection')
-    # print(mouse)
-    # print(x, y)
-    # print(selected_entities)
     return ", ".join([e.name for e in selected_entities])
 
 
