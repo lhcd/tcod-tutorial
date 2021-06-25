@@ -2,8 +2,9 @@ from typing import Dict, List
 
 import tcod
 
-from game_state import RenderOrder
+from models.game_state import GameState
 from models.entity import Entity
+from menus import inventory_menu
 from models.maps import Map
 from models.messages import MessageLog
 
@@ -24,6 +25,7 @@ def render_all(
     panel_y: int,
     mouse: tcod.Mouse,
     colors: Dict[str, tcod.Color],
+    game_state: GameState,
 ):
     # Draw map tiles
     if fov_recompute:
@@ -34,15 +36,23 @@ def render_all(
 
                 if visible:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get("light_wall"), tcod.BKGND_SET)
+                        tcod.console_set_char_background(
+                            con, x, y, colors.get("light_wall"), tcod.BKGND_SET
+                        )
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get("light_ground"), tcod.BKGND_SET)
+                        tcod.console_set_char_background(
+                            con, x, y, colors.get("light_ground"), tcod.BKGND_SET
+                        )
                     game_map.tiles[x][y].explored = True
                 elif game_map.tiles[x][y].explored:
                     if wall:
-                        tcod.console_set_char_background(con, x, y, colors.get("dark_wall"), tcod.BKGND_SET)
+                        tcod.console_set_char_background(
+                            con, x, y, colors.get("dark_wall"), tcod.BKGND_SET
+                        )
                     else:
-                        tcod.console_set_char_background(con, x, y, colors.get("dark_ground"), tcod.BKGND_SET)
+                        tcod.console_set_char_background(
+                            con, x, y, colors.get("dark_ground"), tcod.BKGND_SET
+                        )
 
     entities.sort(key=lambda x: x.render_order.value)
 
@@ -58,17 +68,47 @@ def render_all(
     y = 1
     for message in message_log.messages:
         tcod.console_set_default_foreground(panel, message.color)
-        tcod.console_print_ex(panel, message_log.x, y, tcod.BKGND_NONE, tcod.LEFT, message.text)
+        tcod.console_print_ex(
+            panel, message_log.x, y, tcod.BKGND_NONE, tcod.LEFT, message.text
+        )
         y += 1
 
     render_bar(
-        panel, 1, 1, bar_width, "HP", player.fighter.hp, player.fighter.max_hp, tcod.light_red, tcod.dark_red, height=3
+        panel,
+        1,
+        1,
+        bar_width,
+        "HP",
+        player.fighter.hp,
+        player.fighter.max_hp,
+        tcod.light_red,
+        tcod.dark_red,
+        height=3,
     )
 
     tcod.console_set_default_foreground(panel, tcod.light_gray)
-    tcod.console_print_ex(panel, 1, 0, tcod.BKGND_NONE, tcod.LEFT, get_names_under_mouse(mouse, entities, fov_map))
+    tcod.console_print_ex(
+        panel,
+        1,
+        0,
+        tcod.BKGND_NONE,
+        tcod.LEFT,
+        get_names_under_mouse(mouse, entities, fov_map),
+    )
 
     tcod.console_blit(panel, 0, 0, screen_width, panel_height, 0, 0, panel_y)
+
+    if game_state in (GameState.SHOW_INVENTORY, GameState.DROP_INVENTORY):
+        inventory_menu(
+            con,
+            "Press the key next to an item to use it, or esc to exit."
+            if game_state == GameState.SHOW_INVENTORY
+            else "Press the key next to an item to drop it, or esc to exit.",
+            player.inventory,
+            50,
+            screen_width,
+            screen_height,
+        )
 
 
 def clear_all(con: tcod.Console, entities: List[Entity]):
@@ -86,12 +126,19 @@ def clear_entity(con, entity: Entity):
     tcod.console_put_char(con, entity.x, entity.y, " ", tcod.BKGND_NONE)
 
 
-def get_names_under_mouse(mouse: tcod.Mouse, entities: List[Entity], fov_map: tcod.map.Map) -> str:
+def get_names_under_mouse(
+    mouse: tcod.Mouse, entities: List[Entity], fov_map: tcod.map.Map
+) -> str:
     (x, y) = (mouse.cx, mouse.cy)
     # It seems like this way of getting mouse position is broken in current tcod (?)
     # TODO: switch from deprecated `tcod.sys_check_for_event` to `tcod.event.get`
     selected_entities = list(
-        filter(lambda e: int(e.x/2) == x and int(e.y/2) == y and tcod.map_is_in_fov(fov_map, e.x, e.y), entities)
+        filter(
+            lambda e: int(e.x / 2) == x
+            and int(e.y / 2) == y
+            and tcod.map_is_in_fov(fov_map, e.x, e.y),
+            entities,
+        )
     )
     return ", ".join([e.name for e in selected_entities])
 
@@ -119,5 +166,10 @@ def render_bar(
 
     tcod.console_set_default_foreground(panel, tcod.white)
     tcod.console_print_ex(
-        panel, int(x + total_width / 2), int(y + height / 2), tcod.BKGND_NONE, tcod.CENTER, f"{name}: {value}/{maximum}"
+        panel,
+        int(x + total_width / 2),
+        int(y + height / 2),
+        tcod.BKGND_NONE,
+        tcod.CENTER,
+        f"{name}: {value}/{maximum}",
     )

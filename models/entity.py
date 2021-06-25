@@ -1,9 +1,9 @@
 from math import sqrt
-from game_state import RenderOrder
+from models.game_state import RenderOrder
 
 import tcod
 
-from models.components import BasicMonster, Fighter
+from models.components import BasicMonster, Fighter, Inventory, Item
 from typing import List, Optional
 
 
@@ -23,6 +23,8 @@ class Entity:
         render_order: RenderOrder = RenderOrder.CORPSE,
         fighter: Optional[Fighter] = None,
         ai: Optional[BasicMonster] = None,
+        item: Optional[Item] = None,
+        inventory: Optional[Inventory] = None,
     ):
         self.x = x
         self.y = y
@@ -36,15 +38,25 @@ class Entity:
 
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.inventory = inventory
 
         if self.fighter:
             self.fighter.owner = self
         if self.ai:
             self.ai.owner = self
+        if self.item:
+            self.item.owner = self
+        if self.inventory:
+            self.inventory.owner = self
 
-    def get_blocking_entity_at_location(entities: List["Entity"], x: int, y: int) -> Optional["Entity"]:
+    def get_blocking_entity_at_location(
+        entities: List["Entity"], x: int, y: int
+    ) -> Optional["Entity"]:
         """Class utility to fetch the blocking entity at a location, if any"""
-        return next(filter(lambda e: e.blocks and e.x == x and e.y == y, entities), None)
+        return next(
+            filter(lambda e: e.blocks and e.x == x and e.y == y, entities), None
+        )
 
     def distance_to(self, target: "Entity") -> float:
         dx = target.x - self.x
@@ -55,7 +67,9 @@ class Entity:
         self.x += dx
         self.y += dy
 
-    def move_towards(self, target_x: int, target_y: int, game_map, entities: List["Entity"]):
+    def move_towards(
+        self, target_x: int, target_y: int, game_map, entities: List["Entity"]
+    ):
         dx = target_x - self.x
         dy = target_y - self.y
         distance = sqrt(dx ** 2 + dy ** 2)
@@ -64,7 +78,9 @@ class Entity:
 
         if not (
             game_map.is_blocked(self.x + dx, self.y + dy)
-            or Entity.get_blocking_entity_at_location(entities, self.x + dx, self.y + dy)
+            or Entity.get_blocking_entity_at_location(
+                entities, self.x + dx, self.y + dy
+            )
         ):
             self.move(dx, dy)
 
@@ -77,7 +93,11 @@ class Entity:
         for y1 in range(game_map.height):
             for x1 in range(game_map.width):
                 tcod.map_set_properties(
-                    fov, x1, y1, not game_map.tiles[x1][y1].block_sight, not game_map.tiles[x1][y1].blocked
+                    fov,
+                    x1,
+                    y1,
+                    not game_map.tiles[x1][y1].block_sight,
+                    not game_map.tiles[x1][y1].blocked,
                 )
 
         # Scan all the objects to see if there are objects that must be navigated around

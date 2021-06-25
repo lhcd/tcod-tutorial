@@ -2,10 +2,10 @@ from typing import Tuple
 
 import tcod
 
-from game_state import GameState
+from models.game_state import GameState
 from models.entity import Entity
 from models.messages import Message
-from game_state import RenderOrder
+from models.game_state import RenderOrder
 
 
 def kill_player(player: Entity) -> Tuple[Message, GameState]:

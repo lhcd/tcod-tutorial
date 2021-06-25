@@ -1,12 +1,12 @@
-from functools import reduce
 from typing import List, Optional, Tuple
 from random import randint
 
 import tcod
 
-from game_state import RenderOrder
-from models.components import BasicMonster, Fighter
+from models.game_state import RenderOrder
+from models.components import BasicMonster, Fighter, Item
 from models.entity import Entity
+from models.item_functions import heal
 
 
 class Tile:
@@ -36,7 +36,12 @@ class Rect:
         return (int((self.x1 + self.x2) / 2), int((self.y1 + self.y2) / 2))
 
     def intersects(self, other: "Rect") -> bool:
-        return self.x1 <= other.x2 and self.x2 >= other.x1 and self.y1 <= other.y2 and self.y2 >= other.y1
+        return (
+            self.x1 <= other.x2
+            and self.x2 >= other.x1
+            and self.y1 <= other.y2
+            and self.y2 >= other.y1
+        )
 
     def random_location(self) -> Tuple[int, int]:
         """Returns a random coordinate in the room"""
@@ -73,11 +78,35 @@ class Map:
         tiles = [[Tile(True) for y in range(self.height)] for x in range(self.width)]
         return tiles
 
-    def place_entities(self, room: Rect, entities: List[Entity], max_monsters_per_room: int = 5) -> List[Entity]:
-        monster_count = randint(0, max_monsters_per_room)
-        for i in range(monster_count):
+    def place_items(self, room: Rect, entities: List[Entity], number_of_items: int):
+        items = []
+        for i in range(number_of_items):
             x, y = room.random_location()
-            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+
+            if not any(
+                [entity for entity in entities if entity.x == x and entity.y == y]
+            ):
+                item = Entity(
+                    x,
+                    y,
+                    "!",
+                    tcod.violet,
+                    "Healing Potion",
+                    render_order=RenderOrder.ITEM,
+                    item=Item(use_function=heal, amount=4),
+                )
+                items.append(item)
+        return items
+
+    def place_monsters(
+        self, room: Rect, entities: List[Entity], number_of_monsters: int
+    ) -> List[Entity]:
+        monsters = []
+        for i in range(number_of_monsters):
+            x, y = room.random_location()
+            if not any(
+                [entity for entity in entities if entity.x == x and entity.y == y]
+            ):
                 if randint(0, 100) < 80:
                     monster = Entity(
                         x,
@@ -102,7 +131,20 @@ class Map:
                         fighter=Fighter(hp=16, defense=1, power=4),
                         ai=BasicMonster(),
                     )
-                entities.append(monster)
+                monsters.append(monster)
+        return monsters
+
+    def place_entities(
+        self,
+        room: Rect,
+        entities: List[Entity],
+        max_monsters_per_room: int = 5,
+        max_items_per_room: int = 5,
+    ) -> List[Entity]:
+        monster_count = randint(0, max_monsters_per_room)
+        item_count = randint(0, max_items_per_room)
+        entities += self.place_monsters(room, entities, monster_count)
+        entities += self.place_items(room, entities, item_count)
         return entities
 
     def make_room_based_map(
@@ -115,6 +157,7 @@ class Map:
         player: Entity,
         entities: List[Entity],
         max_monsters_per_room: int,
+        max_items_per_room: int,
     ):
         rooms = []
 
@@ -143,5 +186,7 @@ class Map:
                         self.create_vertical_tunnel(prev_y, new_y, prev_x)
                         self.create_horizontal_tunnel(prev_x, new_x, new_y)
 
-                self.place_entities(new_room, entities, max_monsters_per_room)
+                self.place_entities(
+                    new_room, entities, max_monsters_per_room, max_items_per_room
+                )
                 rooms.append(new_room)
