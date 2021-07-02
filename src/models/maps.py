@@ -1,3 +1,4 @@
+from models.messages import Message
 from typing import List, Optional, Tuple
 from random import randint
 
@@ -6,7 +7,7 @@ import tcod
 from models.game_state import RenderOrder
 from models.components import BasicMonster, Fighter, Item
 from models.entity import Entity
-from models.item_functions import heal
+from models.item_functions import cast_fireball, cast_lightning, heal
 
 
 class Tile:
@@ -86,15 +87,49 @@ class Map:
             if not any(
                 [entity for entity in entities if entity.x == x and entity.y == y]
             ):
-                item = Entity(
-                    x,
-                    y,
-                    "!",
-                    tcod.violet,
-                    "Healing Potion",
-                    render_order=RenderOrder.ITEM,
-                    item=Item(use_function=heal, amount=4),
-                )
+                item_chance = randint(0, 100)
+                if item_chance < 70:
+                    item = Entity(
+                        x,
+                        y,
+                        "!",
+                        tcod.violet,
+                        "Healing Potion",
+                        render_order=RenderOrder.ITEM,
+                        item=Item(use_function=heal, amount=4),
+                    )
+                elif item_chance < 85:
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        tcod.red,
+                        "Fireball Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=Item(
+                            use_function=cast_fireball,
+                            damage=20,
+                            maximum_range=5,
+                            radius=3,
+                            targeting=True,
+                            targeting_message=Message(
+                                "Left-click a target tile for the fireball, or right-click to cancel.",
+                                tcod.light_cyan,
+                            ),
+                        ),
+                    )
+                else:
+                    item = Entity(
+                        x,
+                        y,
+                        "#",
+                        tcod.yellow,
+                        "Lightning Scroll",
+                        render_order=RenderOrder.ITEM,
+                        item=Item(
+                            use_function=cast_lightning, damage=20, maximum_range=5
+                        ),
+                    )
                 items.append(item)
         return items
 

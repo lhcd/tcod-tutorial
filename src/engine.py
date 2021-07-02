@@ -6,7 +6,7 @@ from death_handlers import kill_monster, kill_player
 from engine_handlers import process_player_turn_results
 from fov_handler import initialize_fov, recompute_fov
 from models.game_state import GameState, RenderOrder
-from input_handlers import handle_keys
+from input_handlers import handle_keys, handle_mouse
 from models.components import Fighter, Inventory
 from models.entity import Entity
 from models.maps import Map
@@ -63,7 +63,7 @@ def main():
     room_min_size = 6
     max_rooms = 30
     max_monsters_per_room = 3
-    max_items_per_room = 2
+    max_items_per_room = 10
     game_map = Map(map_width, map_height)
     game_map.make_room_based_map(
         max_rooms,
@@ -90,6 +90,8 @@ def main():
 
     game_state = GameState.PLAYER_TURN
     previous_game_state = game_state
+
+    targeting_item = None
 
     while not tcod.console_is_window_closed():
         tcod.sys_check_for_event(tcod.EVENT_KEY_PRESS | tcod.EVENT_MOUSE, key, mouse)
@@ -128,6 +130,8 @@ def main():
         clear_all(con, entities)
 
         action = handle_keys(key, game_state)
+        mouse_action = handle_mouse(mouse)
+
         move = action.get("move")
         pickup = action.get("pickup")
         show_inventory = action.get("show_inventory")
@@ -135,6 +139,9 @@ def main():
         inventory_index = action.get("inventory_index")
         exit = action.get("exit")
         fullscreen = action.get("fullscreen")
+
+        left_click = mouse_action.get("left_click")
+        right_click = mouse_action.get("right_click")
 
         player_turn_results = []
         if game_state == GameState.PLAYER_TURN:
@@ -173,16 +180,41 @@ def main():
         ):
             item = player.inventory.items[inventory_index]
             if game_state == GameState.SHOW_INVENTORY:
-                player_turn_results += player.inventory.use_item(item)
+                player_turn_results += player.inventory.use_item(
+                    item, entities=entities, fov_map=fov_map
+                )
             elif game_state == GameState.DROP_INVENTORY:
                 player_turn_results += player.inventory.drop_item(item)
+
+        if game_state == GameState.TARGETING:
+            if left_click:
+                target_x, target_y = left_click
+                player_turn_results += player.inventory.use_item(
+                    targeting_item,
+                    entities=entities,
+                    fov_map=fov_map,
+                    target_x=target_x,
+                    target_y=target_y,
+                )
+            elif right_click:
+                player_turn_results.append({"targeting_cancelled": True})
 
         if show_inventory:
             previous_game_state = game_state
             game_state = GameState.SHOW_INVENTORY
 
-        game_state = process_player_turn_results(
-            player_turn_results, message_log, player, game_state, entities
+        (
+            game_state,
+            previous_game_state,
+            targeting_item,
+        ) = process_player_turn_results(
+            player_turn_results,
+            message_log,
+            player,
+            game_state,
+            previous_game_state,
+            entities,
+            targeting_item,
         )
 
         if game_state == GameState.ENEMY_TURN:
@@ -217,6 +249,8 @@ def main():
         if exit:
             if game_state in (GameState.SHOW_INVENTORY, GameState.DROP_INVENTORY):
                 game_state = previous_game_state
+            elif game_state == GameState.TARGETING:
+                player_turn_results.append({"targeting_cancelled": True})
             else:
                 return True
 

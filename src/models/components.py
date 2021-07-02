@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import tcod
 
@@ -65,11 +65,20 @@ class BasicMonster:
 
 
 class Item:
-    def __init__(self, use_function: Callable = lambda x: None, **kwargs) -> None:
+    def __init__(
+        self,
+        use_function: Callable = lambda x: None,
+        targeting: bool = False,
+        targeting_message: Optional[Message] = None,
+        **kwargs,
+    ) -> None:
         self.use_fn = use_function
         self.function_kwargs = kwargs
 
-    def use(self, user: "Entity") -> List[Dict[str, Any]]:
+        self.targeting = targeting
+        self.targeting_message = targeting_message
+
+    def use(self, user: "Entity", **kwargs) -> List[Dict[str, Any]]:
         results = []
         if self.use_fn is None:
             results.append(
@@ -80,7 +89,12 @@ class Item:
                 }
             )
         else:
-            results += self.use_fn(user, **self.function_kwargs)
+            if self.targeting and not (
+                kwargs.get("target_x") or kwargs.get("target_y")
+            ):
+                results.append({"targeting": self.owner})
+            else:
+                results += self.use_fn(user, **{**self.function_kwargs, **kwargs})
         return results
 
 

@@ -58,10 +58,11 @@ class Entity:
             filter(lambda e: e.blocks and e.x == x and e.y == y, entities), None
         )
 
+    def distance(self, x: int, y: int) -> float:
+        return sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
+
     def distance_to(self, target: "Entity") -> float:
-        dx = target.x - self.x
-        dy = target.y - self.y
-        return sqrt(dx ** 2 + dy ** 2)
+        return self.distance(target.x, target.y)
 
     def move(self, dx: int, dy: int):
         self.x += dx
